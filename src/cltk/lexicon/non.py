@@ -7,6 +7,7 @@ from cltk.core.exceptions import CLTKException
 from cltk.data.fetch import FetchCorpus
 from cltk.utils.file_operations import make_cltk_path
 from cltk.utils.utils import query_yes_no
+from cltk.utils.utils import download_file
 
 __author__ = ["Clément Besnier <clem@clementbesnier.fr>"]
 
@@ -22,6 +23,7 @@ class OldNorseZoegaLexicon:
         try:
             self.entries = self._load_entries()
         except FileNotFoundError:
+            #same structure and therefore same problem as lat.py (no corpus url)
             if self.interactive:
                 dl_msg = f"This part of the CLTK depends upon Zoëga's *A Concise Old Norse Dictionary* (1890)."
                 print(dl_msg)

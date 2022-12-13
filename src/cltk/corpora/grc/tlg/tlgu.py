@@ -24,7 +24,7 @@ from cltk.core.exceptions import CLTKException
 from cltk.data.fetch import FetchCorpus
 from cltk.utils.file_operations import make_cltk_path
 from cltk.utils.utils import query_yes_no
-
+from cltk.util.utils import download_file
 # this currently not in use
 ARGS = {
     "book_breaks": "-b",
@@ -55,89 +55,14 @@ class TLGU:
         self._check_and_download_tlgu_source()
         self._check_install()
 
-    def _check_and_download_tlgu_source(self):
-        """Check if tlgu downloaded, if not download it."""
-        path = make_cltk_path("grc/software/grc_software_tlgu/tlgu.h")
-        if not os.path.isfile(path):
-            dl_msg = f"This part of the CLTK depends upon TLGU, software written by Dimitri Marinakis `<http://tlgu.carmen.gr/>`_."
-            print(dl_msg)
-            repo_url = "https://github.com/cltk/grc_software_tlgu.git"
-            dl_dir = os.path.split(path)[0]
-            dl_question = (
-                f"Do you want to download TLGU from '{repo_url}' to '{dl_dir}'?"
-            )
-            if self.interactive:
-                do_download = query_yes_no(question=dl_question)
-            else:
-                do_download = True
-            if do_download:
-                fetch_corpus = FetchCorpus(language="grc")
-                fetch_corpus.import_corpus(corpus_name="grc_software_tlgu")
-            else:
-                raise CLTKException(f"TLGU software required for this class to work.")
+        dl_msg = f"This part of the CLTK depends upon TLGU, software written by Dimitri Marinakis `<http://tlgu.carmen.gr/>`_."
+        print(dl_msg)
 
-    def _check_install(self):
-        """Check if tlgu installed, if not install it."""
-        try:
-            subprocess.check_output(["which", "tlgu"])
-        except subprocess.SubprocessError as sub_err:
-            print("TLGU not installed.")
-            logger.info("TLGU not installed: %s", sub_err)
-            logger.info("Installing TLGU.")
-            if not subprocess.check_output(["which", "gcc"]):
-                logger.error("GCC seems not to be installed.")
-            else:
-                tlgu_path = make_cltk_path("grc/software/grc_software_tlgu")
-                if self.interactive:
-                    install_question = "Do you want to install TLGU?"
-                    do_install = query_yes_no(question=install_question)
-                    if not do_install:
-                        raise CLTKException(
-                            "TLGU installation required for this class to work."
-                        )
-                else:
-                    print("Non-interactive installation. Continuing ...")
-                command = "cd {0} && make install".format(tlgu_path)
-                print(f"Going to run command: ``{command}``")
-                try:
-                    p_out = subprocess.call(command, shell=True)
-                except subprocess.SubprocessError as sub_err:
-                    print(
-                        "Error executing installation. Going to check output of ``subprocess.call()`` ..."
-                    )
-                    raise CLTKException(sub_err)
-                if p_out == 0:
-                    msg = "TLGU installed."
-                    print(msg)
-                    logger.info(msg)
-                    return True
-                else:
-                    msg = "TLGU install without sudo failed. Going to try again with sudo (usually required for Linux) ..."
-                    print(msg)
-                    logger.error(msg)
-                command = "cd {0} && sudo make install".format(tlgu_path)
-                if self.interactive:
-                    install_question = "Do you want to install TLGU? with sudo?"
-                    do_install = query_yes_no(question=install_question)
-                    if not do_install:
-                        raise CLTKException(
-                            "TLGU installation required for this class to work."
-                        )
-                    p_out = subprocess.call(command, shell=True)
-                else:
-                    print("Going to run command:", command)
-                    p_out = subprocess.call(command, shell=True)
-                if p_out == 0:
-                    msg = "TLGU installed."
-                    print(msg)
-                    logger.info(msg)
-                else:
-                    msg = "TLGU install with sudo failed."
-                    print(msg)
-                    logger.error(msg)
-                    raise CLTKException(
-                        "TLGU installation required for this class to work."
-                    )
+        repo_url = https://github.com/cltk/grc_software_tlgu.git
+        path = make_cltk_path("grc/software/grc_software_tlgu/tlgu.h")
+        download_file(repo_url, path, interactive)
+        #this is not accurate because it doesn't download the specific corpus name "grc_software_tlgu" from the repo url. how do i access that?
+        #I feel like I'm cutting out important checks in _check_install() that can't be generalized in my method
 
     @staticmethod
     def convert(

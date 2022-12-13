@@ -259,3 +259,27 @@ def get_file_with_progress_bar(model_url: str, file_path: str) -> None:
 
 
 CLTK_DATA_DIR = get_cltk_data_dir()
+
+def download_file(file_url, wanted_path, interactive){
+
+    if CLTK_DATA_DIR in wanted_path:
+        path = wanted_path
+    else:
+        path = os.path.join(CLTK_DATA_DIR, wanted_path)
+
+    if file_exists(path):
+        raise CLTKException(
+        f"download declined because corpus already exists"
+        )
+
+    if self.interactive:
+        if query_yes_no("Would you like to download this corpus to " + path):
+            get_file_with_progress_bar(file_url, path)
+        else:
+            raise CLTKException(
+            f"download declined"
+            )
+    else:
+        get_file_with_progress_bar(file_url, path)
+
+}

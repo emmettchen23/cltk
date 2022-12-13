@@ -31,6 +31,7 @@ from cltk.data.fetch import FetchCorpus
 from cltk.languages.utils import get_lang
 from cltk.utils import CLTK_DATA_DIR, get_file_with_progress_bar, query_yes_no
 from cltk.utils.file_operations import make_cltk_path
+from cltk.utils.utils import download_file
 
 MAP_CLTK_SELF_HOSTED_LANGS = dict(enm="enm")
 
@@ -140,31 +141,9 @@ class CLTKWord2VecEmbeddings:
         """Perform complete download of Word2Vec models and save
         them in appropriate ``cltk_data`` dir.
         """
-        if not self.interactive:
-            if not self.silent:
-                print(
-                    f"CLTK message: Going to download the model ..."
-                )  # pragma: no cover
-                # TODO download git repository
-                fetch_corpus = FetchCorpus(language=self.iso_code)
-                fetch_corpus.import_corpus(
-                    corpus_name=f"{self.iso_code}_cltk_models", branch="main"
-                )
-        else:
-            print(  # pragma: no cover
-                "CLTK message: This part of the CLTK depends upon word embedding models from the NLPL project."
-            )  # pragma: no cover
-            dl_is_allowed = query_yes_no(
-                f"Do you want to download the {self.iso_code} models to {self.model_path}'?"
-            )  # type: bool
-            if dl_is_allowed:
-                fetch_corpus = FetchCorpus(language=self.iso_code)
-                fetch_corpus.import_corpus(
-                    corpus_name=f"{self.iso_code}_models_cltk", branch="main"
-                )
-                pass
-            else:
-                raise CLTKException(f"Impossible to download the model.")
+        corpus = MAP_NLPL_LANG_TO_URL[self.iso_code]
+        download_file(corpus, self.model_path, self.interactive)
+        #is there a difference between a self hosted model and one downloaded from a url? if so, this method may not work
 
     def _is_model_present(self) -> bool:
         """Check if model in an otherwise valid filepath."""
@@ -293,25 +272,8 @@ class Word2VecEmbeddings:
         them in appropriate ``cltk_data`` dir.
         """
         model_url = MAP_NLPL_LANG_TO_URL[self.iso_code]
-        if not self.interactive:
-            if not self.silent:
-                print(
-                    f"CLTK message: Going to download file '{model_url}' to '{self.fp_zip} ..."
-                )  # pragma: no cover
-            get_file_with_progress_bar(model_url=model_url, file_path=self.fp_zip)
-        else:
-            print(  # pragma: no cover
-                "CLTK message: This part of the CLTK depends upon word embedding models from the NLPL project."
-            )  # pragma: no cover
-            dl_is_allowed = query_yes_no(
-                f"Do you want to download file '{model_url}' to '{self.fp_zip}'?"
-            )  # type: bool
-            if dl_is_allowed:
-                get_file_with_progress_bar(model_url=model_url, file_path=self.fp_zip)
-            else:
-                raise CLTKException(
-                    f"Download of necessary Stanza model declined for '{self.language}'. Unable to continue with Stanza's processing."
-                )
+        download_file(model_url, self.fp_zip, self.interactive)
+
 
     def _unzip_nlpl_model(self) -> None:
         """Unzip model"""
@@ -405,25 +367,8 @@ class FastTextEmbeddings:
         TODO: error out better or continue to _load_model?
         """
         model_url = self._build_fasttext_url()
-        if not self.interactive:
-            if not self.silent:
-                print(
-                    f"CLTK message: Going to download file '{model_url}' to '{self.model_fp} ..."
-                )  # pragma: no cover
-            get_file_with_progress_bar(model_url=model_url, file_path=self.model_fp)
-        else:
-            print(  # pragma: no cover
-                "CLTK message: This part of the CLTK depends upon word embedding models from the Fasttext project."
-            )  # pragma: no cover
-            dl_is_allowed = query_yes_no(
-                f"Do you want to download file '{model_url}' to '{self.model_fp}'?"
-            )  # type: bool
-            if dl_is_allowed:
-                get_file_with_progress_bar(model_url=model_url, file_path=self.model_fp)
-            else:
-                raise CLTKException(
-                    f"Download of necessary Stanza model declined for '{self.iso_code}'. Unable to continue with Stanza's processing."
-                )
+        download_file(model_url, self.model_fp, self.interactive)
+        #deleted code very similar to my function so should work well
 
     def _is_model_present(self):
         """Check if model in an otherwise valid filepath."""

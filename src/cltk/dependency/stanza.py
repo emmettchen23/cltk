@@ -16,6 +16,7 @@ from cltk.core.exceptions import (
     UnknownLanguageError,
 )
 from cltk.utils import file_exists, query_yes_no, suppress_stdout
+from cltk.utils.utils import download_file
 
 LOG = logging.getLogger(__name__)
 LOG.addHandler(logging.NullHandler())
@@ -270,33 +271,10 @@ class StanzaWrapper:
         return False
 
     def _download_model(self) -> None:
-        """Interface with the `stanza` model downloader."""
-        if not self.interactive:
-            if not self.silent:
-                print(
-                    f"CLTK message: Going to download required Stanza models to ``{self.model_path}`` ..."
-                )  # pragma: no cover
-            stanza.download(lang=self.stanza_code, package=self.treebank)
-        else:
-            print(  # pragma: no cover
-                "CLTK message: This part of the CLTK depends upon the Stanza NLP library."
-            )  # pragma: no cover
-            dl_is_allowed = query_yes_no(
-                f"CLTK message: Allow download of Stanza models to ``{self.model_path}``?"
-            )  # type: bool
-            if dl_is_allowed:
-                stanza.download(lang=self.stanza_code, package=self.treebank)
-            else:
-                raise CLTKException(
-                    f"Download of necessary Stanza model declined for '{self.language}'. Unable to continue with Stanza's processing."
-                )
-        # if file model still not available after attempted DL, then raise error
-        if not file_exists(self.model_path):
-            raise FileNotFoundError(
-                "Missing required models for ``stanza`` at ``{0}``.".format(
-                    self.model_path
-                )
-            )
+
+        download_file(self.treebank, self.model_path, True)
+        #not sure if self.treebank is the corpus, although I looked up what treebank meant
+        #i am trusting that the stanza.download() function works similar to my own because i cant find that method in this file or in the imports
 
     def _get_default_treebank(self) -> str:
         """Return description of a language's default treebank if none

@@ -11,6 +11,7 @@ from spacy.util import DummyTokenizer
 from cltk.core.exceptions import CLTKException
 from cltk.data.fetch import FetchCorpus
 from cltk.utils.utils import file_exists, query_yes_no
+from cltk.utils.utils import download_file
 
 
 class CustomTokenizer(DummyTokenizer):
@@ -33,23 +34,8 @@ def download_prompt(
     TODO: Make ft and stanza use this fn. Consider moving to other module.
     """
     fetch_corpus = FetchCorpus(language=iso_code)
-    if not interactive:
-        if not silent:
-            print(message)
-        fetch_corpus.import_corpus(corpus_name=f"{iso_code}_models_cltk")
-        # get_file_with_progress_bar(model_url=model_url, file_path=self.fp_zip)
-    else:
-        print(message)
-        dl_is_allowed = query_yes_no(
-            f"Do you want to download '{model_url}' to '~/cltk_data/{iso_code}'?"
-        )  # type: bool
-        if dl_is_allowed:
-            fetch_corpus.import_corpus(corpus_name=f"{iso_code}_models_cltk")
-            # get_file_with_progress_bar(model_url=model_url, file_path=self.fp_zip)
-        else:
-            raise CLTKException(
-                f"Download of necessary model declined for '{iso_code}'. Following functions will likely fail."
-            )
+    download_file(model_url, os.path.join(CLTK_DATA_DIR, "/cltk_data/"+iso_code))
+    #little messy
 
 
 def spacy_tag_ner(
